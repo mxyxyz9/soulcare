@@ -53,18 +53,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gray: {
-          50: "hsl(var(--gray-50))",
-          100: "hsl(var(--gray-100))",
-          200: "hsl(var(--gray-200))",
-          300: "hsl(var(--gray-300))",
-          400: "hsl(var(--gray-400))",
-          500: "hsl(var(--gray-500))",
-          600: "hsl(var(--gray-600))",
-          700: "hsl(var(--gray-700))",
-          800: "hsl(var(--gray-800))",
-          900: "hsl(var(--gray-900))",
-          950: "hsl(var(--gray-950))",
+        brand: {
+          light: "hsl(var(--brand-light))",
+          DEFAULT: "hsl(var(--brand))",
+          dark: "hsl(var(--brand-dark))",
         },
       },
       borderRadius: {
@@ -97,7 +89,7 @@ const config = {
         "slide-in": "slide-in 0.3s ease-out",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Manrope", "system-ui", "sans-serif"],
       },
       spacing: {
         "18": "4.5rem",

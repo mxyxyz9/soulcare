@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Menu, X, User, LogOut, Settings, BarChart3 } from "lucide-react"
+import { Menu, X, User, LogOut, Settings, BarChart3, Heart } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,22 +24,20 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:border-gray-800">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 dark:bg-gray-100">
-            <span className="text-sm font-bold text-white dark:text-gray-900">SC</span>
-          </div>
-          <span className="text-xl font-semibold tracking-tight">Soul Care</span>
+          <Heart className="h-8 w-8 text-primary" />
+          <span className="text-xl font-bold tracking-tight text-foreground">Soul Care</span>
         </Link>
 
         {/* Mobile menu button */}
         <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground md:hidden"
           onClick={toggleMenu}
           aria-label="Toggle menu"
         >
-          {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Desktop navigation */}
@@ -65,33 +63,23 @@ export function Header() {
 
       {/* Mobile navigation */}
       {isMenuOpen && (
-        <div className="border-t border-gray-200 bg-background dark:border-gray-800 md:hidden">
-          <div className="container mx-auto px-4 py-4">
+        <div className="border-t border-border/40 bg-background md:hidden">
+          <div className="container mx-auto px-6 py-4">
             <nav className="flex flex-col space-y-3">
               <NavLinks mobile />
-              <div className="border-t border-gray-200 pt-3 dark:border-gray-800">
+              <div className="border-t border-border/40 pt-4">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-2">
-                    <Button asChild variant="ghost" size="sm" className="justify-start">
-                      <Link href="/dashboard">
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        Dashboard
-                      </Link>
-                    </Button>
-                    <Button asChild variant="ghost" size="sm" className="justify-start">
-                      <Link href="/profile">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Link>
-                    </Button>
+                    <MobileUserMenuItem href="/dashboard" icon={<BarChart3 />}>Dashboard</MobileUserMenuItem>
+                    <MobileUserMenuItem href="/profile" icon={<User />}>Profile</MobileUserMenuItem>
                     <Button variant="ghost" size="sm" className="justify-start" onClick={() => signOut()}>
-                      <LogOut className="mr-2 h-4 w-4" />
+                      <LogOut className="mr-2 h-5 w-5" />
                       Sign Out
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col space-y-2">
-                    <Button asChild variant="ghost" size="sm">
+                    <Button asChild variant="ghost" size="sm" className="justify-start">
                       <Link href="/login">Sign In</Link>
                     </Button>
                     <Button asChild size="sm">
@@ -99,7 +87,7 @@ export function Header() {
                     </Button>
                   </div>
                 )}
-                <div className="mt-3 flex justify-center">
+                <div className="mt-4 flex justify-center">
                   <ModeToggle />
                 </div>
               </div>
@@ -113,8 +101,8 @@ export function Header() {
 
 function NavLinks({ mobile = false }: { mobile?: boolean }) {
   const linkClass = mobile
-    ? "block py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-    : "text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
+    ? "block py-2 text-base font-medium text-muted-foreground hover:text-foreground"
+    : "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
 
   return (
     <>
@@ -135,23 +123,30 @@ function UserMenu({ user }: { user: any }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           {user?.image ? (
             <img
-              src={user.image || "/placeholder.svg"}
-              alt={user.name || "User"}
-              className="h-8 w-8 rounded-full object-cover"
+              src={user.image || "/placeholder-user.jpg"}
+              alt={user.name || "User avatar"}
+              className="h-full w-full rounded-full object-cover"
             />
           ) : (
-            <User className="h-4 w-4" />
+            <User className="h-5 w-5" />
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="flex items-center justify-start gap-2 p-2">
+      <DropdownMenuContent align="end" className="w-64">
+        <div className="flex items-center justify-start gap-3 p-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <img
+              src={user.image || "/placeholder-user.jpg"}
+              alt={user.name || "User avatar"}
+              className="h-full w-full rounded-full object-cover"
+            />
+          </div>
           <div className="flex flex-col space-y-1 leading-none">
-            {user?.name && <p className="font-medium">{user.name}</p>}
-            {user?.email && <p className="w-[200px] truncate text-sm text-muted-foreground">{user.email}</p>}
+            {user?.name && <p className="font-semibold">{user.name}</p>}
+            {user?.email && <p className="w-[180px] truncate text-sm text-muted-foreground">{user.email}</p>}
           </div>
         </div>
         <DropdownMenuSeparator />
@@ -180,5 +175,14 @@ function UserMenu({ user }: { user: any }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+function MobileUserMenuItem({ href, children, icon }: { href: string; children: React.ReactNode; icon: React.ReactNode }) {
+  return (
+    <Link href={href} className="flex items-center rounded-md p-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+      <div className="mr-3 h-5 w-5">{icon}</div>
+      {children}
+    </Link>
   )
 }

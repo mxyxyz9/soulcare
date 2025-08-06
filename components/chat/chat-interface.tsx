@@ -3,9 +3,9 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Mic, Send, Volume2, VolumeX, AlertTriangle } from "lucide-react"
+import { Mic, Send, Volume2, VolumeX, AlertTriangle, Sparkles } from "lucide-react"
 import { ChatMessage } from "@/components/chat/chat-message"
 import { AccessibilityControls } from "@/components/accessibility/accessibility-controls"
 import { useSpeech } from "@/hooks/use-speech"
@@ -43,12 +43,10 @@ export function ChatInterface() {
   const { isListening, startListening, stopListening, transcript, isSpeaking, speak, stopSpeaking, isSpeechEnabled } =
     useSpeech()
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Update input when transcript changes
   useEffect(() => {
     if (transcript) {
       setInput(transcript)
@@ -71,21 +69,14 @@ export function ChatInterface() {
     setError(null)
 
     try {
-      // Format messages for the API
       const apiMessages: AIMessage[] = messages
-        .filter((msg) => msg.id !== "welcome") // Skip the welcome message
-        .map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }))
+        .filter((msg) => msg.id !== "welcome")
+        .map((msg) => ({ role: msg.role, content: msg.content }))
         .concat({ role: "user", content: input })
 
-      // Call the API
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: apiMessages }),
       })
 
@@ -122,20 +113,27 @@ export function ChatInterface() {
 
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion)
+    // Optionally, send the message directly
+    // handleSendMessage(suggestion)
   }
 
   return (
     <div className="flex h-full max-h-[calc(100vh-8rem)] flex-col">
-      <Card className="flex h-full flex-col border-0 bg-white shadow-sm dark:bg-gray-950">
-        <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-800">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Soul Care Assistant</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Your compassionate AI companion</p>
+      <Card className="flex h-full flex-col rounded-lg border border-border/40 bg-card text-card-foreground shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 p-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold">Soul Care Assistant</CardTitle>
+              <p className="text-sm text-muted-foreground">Your compassionate AI companion</p>
+            </div>
           </div>
           <AccessibilityControls />
-        </div>
+        </CardHeader>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <CardContent className="flex-1 overflow-y-auto p-4">
           <div className="space-y-6">
             {messages.map((message) => (
               <ChatMessage
@@ -145,95 +143,64 @@ export function ChatInterface() {
                 onSuggestionClick={handleSuggestionClick}
               />
             ))}
-            {isLoading && (
-              <div className="flex justify-center p-4">
-                <div className="flex space-x-1">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                  <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                    style={{ animationDelay: "0.4s" }}
-                  ></div>
-                </div>
-              </div>
-            )}
-            {error && (
-              <div className="flex items-center justify-center gap-2 rounded-lg bg-red-50 p-3 text-red-700 dark:bg-red-900/20 dark:text-red-300">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
+            {isLoading && <LoadingIndicator />}
+            {error && <ErrorMessage message={error} />}
             <div ref={messagesEndRef} />
           </div>
-        </div>
+        </CardContent>
 
-        <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
-                className="border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900"
-                disabled={isLoading || isListening}
-              />
-            </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={isListening ? stopListening : startListening}
-                    disabled={!isSpeechEnabled}
-                    className="h-10 w-10 p-0"
-                  >
-                    <Mic className={`h-4 w-4 ${isListening ? "text-red-500" : ""}`} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isSpeechEnabled
-                    ? isListening
-                      ? "Stop recording"
-                      : "Start voice input"
-                    : "Speech recognition not available"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {isSpeechEnabled && (
+        <div className="border-t border-border/40 p-4">
+          <div className="relative">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message or use the mic..."
+              className="h-12 rounded-full border-border bg-muted/50 pr-28 pl-5 text-base focus-visible:ring-primary/50"
+              disabled={isLoading || isListening}
+            />
+            <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center space-x-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      size="sm"
+                      size="icon"
                       variant="ghost"
-                      onClick={isSpeaking ? stopSpeaking : () => speak(messages[messages.length - 1]?.content || "")}
-                      className="h-10 w-10 p-0"
-                    >
-                      {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                      onClick={isListening ? stopListening : startListening}
+                      disabled={!isSpeechEnabled}
+                      className={`h-9 w-9 rounded-full ${isListening ? "bg-red-500/20 text-red-500" : ""}`}>
+                      <Mic className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{isSpeaking ? "Stop speaking" : "Read last message aloud"}</TooltipContent>
+                  <TooltipContent>
+                    {isSpeechEnabled ? (isListening ? "Stop recording" : "Start voice input") : "Speech not available"}
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            )}
-
-            <Button
-              size="sm"
-              onClick={handleSendMessage}
-              disabled={!input.trim() || isLoading}
-              className="h-10 w-10 p-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+              <Button size="icon" onClick={handleSendMessage} disabled={!input.trim() || isLoading} className="h-9 w-9 rounded-full">
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
     </div>
   )
 }
+
+const LoadingIndicator = () => (
+  <div className="flex justify-center p-4">
+    <div className="flex items-center space-x-2">
+      <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary/50 [animation-delay:-0.3s]"></div>
+      <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary/50 [animation-delay:-0.15s]"></div>
+      <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary/50"></div>
+    </div>
+  </div>
+)
+
+const ErrorMessage = ({ message }: { message: string }) => (
+  <div className="flex items-center justify-center gap-2 rounded-lg bg-destructive/10 p-3 text-destructive">
+    <AlertTriangle className="h-5 w-5" />
+    <span className="text-sm font-medium">{message}</span>
+  </div>
+)
